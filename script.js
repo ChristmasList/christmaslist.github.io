@@ -30,7 +30,7 @@ function addItem() {
                 console.log('Fetched data:', data); // Log the data to debug
 
                 const domain = new URL(url).hostname;
-                const color = colorDatabase[domain] || '#ffffff'; // Default color if not in database
+                const color = colorDatabase[domain] || '#000000'; // Default to black if not in database
 
                 if (data) {
                     itemList.push({
@@ -55,8 +55,10 @@ function updateList() {
     listElement.innerHTML = '';
     itemList.forEach((item, index) => {
         const listItem = document.createElement('li');
+        listItem.className = 'list-item';
+        listItem.style.borderColor = item.color; // Apply the color from the database or default to black
         listItem.innerHTML = `
-            <div style="border: 2px solid ${item.color}; padding: 10px; margin: 10px 0;">
+            <div>
                 <h3>${item.title}</h3>
                 <img src="${item.image}" alt="${item.title}" style="width: 100px; height: auto;">
                 <p>${item.description}</p>
