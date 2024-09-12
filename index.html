@@ -72,8 +72,8 @@
             background-color: #0056b3;
         }
 
-        .copy-button {
-            background-color: #ffc107;
+        .remove-button {
+            background-color: #dc3545;
             color: white;
             border: none;
             padding: 8px 15px;
@@ -86,8 +86,30 @@
             cursor: pointer;
         }
 
-        .copy-button:hover {
+        .remove-button:hover {
+            background-color: #c82333;
+        }
+
+        .import-button, .export-button {
+            background-color: #ffc107;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 10px 5px;
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+        }
+
+        .import-button:hover, .export-button:hover {
             background-color: #e0a800;
+        }
+
+        #importInput {
+            display: none;
         }
     </style>
 </head>
@@ -101,7 +123,9 @@
         <!-- List items will be added here -->
     </ul>
     <div style="text-align: center; margin-top: 20px;">
-        <button class="copy-button" onclick="copyToClipboard()">Copy URL</button>
+        <button class="export-button" onclick="exportList()">Export List</button>
+        <button class="import-button" onclick="document.getElementById('importInput').click()">Import List</button>
+        <input type="file" id="importInput">
     </div>
 </body>
 </html>
