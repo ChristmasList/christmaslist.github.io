@@ -1,10 +1,14 @@
 const apiKey = '50fcd22bd9234e05bfc6d6cbe0fc5e46'; // Replace with your LinkPreview API key
-const apiUrl = 'https://api.linkpreview.net/?key=' + apiKey + '&q=';
+const apiUrl = 'https://api.linkpreview.net/?q=';
 
 function addItem() {
     const url = document.getElementById('itemUrl').value;
     if (url) {
-        fetch(apiUrl + encodeURIComponent(url))
+        fetch(apiUrl + encodeURIComponent(url), {
+            headers: {
+                'X-Linkpreview-Api-Key': apiKey
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 if (data && data.image) {
