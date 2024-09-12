@@ -5,6 +5,7 @@ let itemList = []; // Initialize itemList
 
 function addItem() {
     const url = document.getElementById('itemUrl').value;
+    const price = document.getElementById('itemPrice').value || 'Price not available'; // Get price from input
     if (url) {
         fetch(apiUrl, {
             method: 'POST',
@@ -26,10 +27,11 @@ function addItem() {
                         title: data.title || 'No title',
                         description: data.description || 'No description',
                         image: data.image || 'https://via.placeholder.com/100', // Placeholder if no image
-                        price: 'Price not available', // Manual entry or additional parsing needed
+                        price: price, // Use the manual or default price
                         url: url
                     });
                     document.getElementById('itemUrl').value = '';
+                    document.getElementById('itemPrice').value = ''; // Clear the price input
                     updateList();
                 } else {
                     console.error('No metadata found for this URL.');
