@@ -8,6 +8,7 @@ const colorDatabase = {
     'lego.com': '#ffd502',
     'amazon.com': '#ff9900',
     'example.com': '#cccccc',
+    'isthereanydeal.com': '#3090ce',
     // Add more entries as needed
 };
 
@@ -25,8 +26,7 @@ function getMainDomain(url) {
     }
 }
 
-function addItem() {
-    const url = document.getElementById('itemUrl').value;
+function addItem(url) {
     if (url) {
         fetch(apiUrl, {
             method: 'POST',
@@ -54,7 +54,6 @@ function addItem() {
                         url: url,
                         color: color
                     });
-                    document.getElementById('itemUrl').value = '';
                     updateList();
                 } else {
                     console.error('No metadata found for this URL.');
@@ -67,7 +66,7 @@ function addItem() {
 function updateList() {
     const listElement = document.getElementById('list');
     listElement.innerHTML = '';
-    itemList.forEach((item, index) => {
+    itemList.forEach((item) => {
         const listItem = document.createElement('li');
         listItem.className = 'list-item';
         listItem.style.borderColor = item.color; // Apply the color from the database or default to black
@@ -82,3 +81,21 @@ function updateList() {
         listElement.appendChild(listItem);
     });
 }
+
+function parseQueryString() {
+    const params = new URLSearchParams(window.location.search);
+    const shareUrls = params.get('share');
+    if (shareUrls) {
+        const urls = shareUrls.split('&');
+        urls.forEach(url => addItem(decodeURIComponent(url)));
+    }
+}
+
+function copyToClipboard(url) {
+    navigator.clipboard.writeText(url)
+        .then(() => console.log('URL copied to clipboard'))
+        .catch(err => console.error('Error copying URL to clipboard:', err));
+}
+
+// Initialize the list from URL parameters if available
+window.onload = parseQueryString;
