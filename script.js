@@ -91,16 +91,14 @@ function removeItem(index) {
 }
 
 function exportList() {
-    const json = JSON.stringify(itemList);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'list.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const json = JSON.stringify(itemList, null, 2); // Format JSON with indentation
+    navigator.clipboard.writeText(json).then(() => {
+        alert('List copied to clipboard!');
+    }).catch(err => {
+        console.error('Error copying to clipboard:', err);
+    });
 }
+
 
 function importList(event) {
     const file = event.target.files[0];
