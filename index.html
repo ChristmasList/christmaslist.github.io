@@ -71,16 +71,37 @@
         .website-button:hover {
             background-color: #0056b3;
         }
+
+        .copy-button {
+            background-color: #ffc107;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin-top: 10px;
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer;
+        }
+
+        .copy-button:hover {
+            background-color: #e0a800;
+        }
     </style>
 </head>
 <body>
     <h1>Christmas List Generator</h1>
     <div style="text-align: center; margin-bottom: 20px;">
         <input type="text" id="itemUrl" placeholder="Enter item URL">
-        <button onclick="addItem()">Add Item</button>
+        <button onclick="addItem(document.getElementById('itemUrl').value)">Add Item</button>
     </div>
     <ul id="list">
         <!-- List items will be added here -->
     </ul>
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="copy-button" onclick="copyToClipboard(window.location.href)">Copy URL</button>
+    </div>
 </body>
 </html>
