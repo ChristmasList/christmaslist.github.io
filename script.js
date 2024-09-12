@@ -66,7 +66,7 @@ function addItem(url) {
 function updateList() {
     const listElement = document.getElementById('list');
     listElement.innerHTML = '';
-    itemList.forEach((item) => {
+    itemList.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.className = 'list-item';
         listItem.style.borderColor = item.color; // Apply the color from the database or default to black
@@ -76,20 +76,49 @@ function updateList() {
                 <img src="${item.image}" alt="${item.title}">
                 <p>${item.description}</p>
                 <a href="${item.url}" class="website-button" target="_blank">Visit Website</a>
+                <button class="remove-button" onclick="removeItem(${index})">Remove Item</button>
             </div>
         `;
         listElement.appendChild(listItem);
     });
 }
 
-function parseQueryString() {
-    const params = new URLSearchParams(window.location.search);
-    const shareUrls = params.get('share');
-    if (shareUrls) {
-        const urls = shareUrls.split('&').map(decodeURIComponent);
-        urls.forEach(url => addItem(url));
+function removeItem(index) {
+    if (index >= 0 && index < itemList.length) {
+        itemList.splice(index, 1);
+        updateList();
     }
 }
+
+function exportList() {
+    const json = JSON.stringify(itemList);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'list.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function importList(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                itemList = JSON.parse(e.target.result);
+                updateList();
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        };
+        reader.readAsText(file);
+    }
+}
+
+document.getElementById('importInput').addEventListener('change', importList);
 
 function generateShareableUrl() {
     const baseUrl = 'https://christmaslist.github.io/';
@@ -97,12 +126,7 @@ function generateShareableUrl() {
     return `${baseUrl}?share=${shareParam}`;
 }
 
-function copyToClipboard() {
-    const url = generateShareableUrl();
-    navigator.clipboard.writeText(url)
-        .then(() => console.log('Shareable URL copied to clipboard:', url))
-        .catch(err => console.error('Error copying URL to clipboard:', err));
-}
+window.onload = function() {
+    // Optional: Initialize the list from URL parameters if available
+};
 
-// Initialize the list from URL parameters if available
-window.onload = parseQueryString;
