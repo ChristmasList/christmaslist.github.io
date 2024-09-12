@@ -1,42 +1,44 @@
-let itemList = [];
+const apiKey = '50fcd22bd9234e05bfc6d6cbe0fc5e46'; // Replace with your LinkPreview API key
+const apiUrl = 'https://api.linkpreview.net/?key=' + apiKey + '&q=';
 
 function addItem() {
     const url = document.getElementById('itemUrl').value;
     if (url) {
-        itemList.push(url);
-        document.getElementById('itemUrl').value = '';
-        updateList();
+        fetch(apiUrl + encodeURIComponent(url))
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.image) {
+                    itemList.push({
+                        title: data.title,
+                        description: data.description,
+                        image: data.image,
+                        price: 'Price not available', // Manual entry or additional parsing needed
+                        url: url
+                    });
+                    document.getElementById('itemUrl').value = '';
+                    updateList();
+                } else {
+                    console.error('No metadata found for this URL.');
+                }
+            })
+            .catch(error => console.error('Error fetching metadata:', error));
     }
 }
 
 function updateList() {
     const listElement = document.getElementById('list');
     listElement.innerHTML = '';
-    itemList.forEach((url, index) => {
+    itemList.forEach((item, index) => {
         const listItem = document.createElement('li');
-        listItem.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
+        listItem.innerHTML = `
+            <div>
+                <h3>${item.title || 'No title'}</h3>
+                <img src="${item.image}" alt="${item.title}" style="width: 100px; height: auto;">
+                <p>${item.description || 'No description'}</p>
+                <p>Price: ${item.price || 'Not available'}</p>
+                <a href="${item.url}" target="_blank">${item.url}</a>
+            </div>
+        `;
         listElement.appendChild(listItem);
     });
-}
-
-function exportList() {
-    const blob = new Blob([JSON.stringify(itemList)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'list.json';
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-function importList(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            itemList = JSON.parse(e.target.result);
-            updateList();
-        };
-        reader.readAsText(file);
-    }
 }
