@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Christmas List Generator</title>
     <script src="script.js" defer></script>
+    <style>
+        .website-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>Christmas List Generator</h1>
     <input type="text" id="itemUrl" placeholder="Enter item URL">
-    <input type="text" id="itemPrice" placeholder="Enter item price">
     <button onclick="addItem()">Add Item</button>
     <ul id="list">
         <!-- List items will be added here -->
