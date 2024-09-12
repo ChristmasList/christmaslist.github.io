@@ -1,6 +1,8 @@
 const apiKey = '50fcd22bd9234e05bfc6d6cbe0fc5e46'; // Replace with your LinkPreview API key
 const apiUrl = 'https://api.linkpreview.net/?q=';
 
+let itemList = []; // Initialize itemList
+
 function addItem() {
     const url = document.getElementById('itemUrl').value;
     if (url) {
