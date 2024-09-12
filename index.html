@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Christmas List Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Christmas List Generator</h1>
+    <input type="text" id="itemUrl" placeholder="Enter item URL">
+    <button onclick="addItem()">Add Item</button>
+    <button onclick="exportList()">Export List</button>
+    <input type="file" id="importFile" onchange="importList(event)" />
+    <ul id="list">
+        <!-- List items will be added here -->
+    </ul>
+    <script src="script.js"></script>
+</body>
+</html>
