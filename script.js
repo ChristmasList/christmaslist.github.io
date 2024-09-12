@@ -11,6 +11,20 @@ const colorDatabase = {
     // Add more entries as needed
 };
 
+function getMainDomain(url) {
+    try {
+        const hostname = new URL(url).hostname;
+        const parts = hostname.split('.');
+        if (parts.length > 2) {
+            return parts.slice(-2).join('.'); // Handles subdomains, e.g., 'www.lego.com' -> 'lego.com'
+        }
+        return hostname; // For domains without subdomains
+    } catch (error) {
+        console.error('Error extracting domain:', error);
+        return '';
+    }
+}
+
 function addItem() {
     const url = document.getElementById('itemUrl').value;
     if (url) {
@@ -29,8 +43,8 @@ function addItem() {
             .then(data => {
                 console.log('Fetched data:', data); // Log the data to debug
 
-                const domain = new URL(url).hostname;
-                const color = colorDatabase[domain] || '#000000'; // Default to black if not in database
+                const mainDomain = getMainDomain(url);
+                const color = colorDatabase[mainDomain] || '#000000'; // Default to black if not in database
 
                 if (data) {
                     itemList.push({
