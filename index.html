@@ -6,32 +6,79 @@
     <title>Christmas List Generator</title>
     <script src="script.js" defer></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #itemUrl {
+            width: 300px;
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
         .list-item {
             background-color: #ffffff; /* White background */
             border: 2px solid #000000; /* Default black border */
-            padding: 10px;
+            padding: 15px;
             margin: 10px 0;
-            border-radius: 8px; /* Optional: Rounded corners */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+
+        .list-item img {
+            max-width: 100px;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
         }
 
         .website-button {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 8px 15px;
             text-align: center;
             text-decoration: none;
             display: inline-block;
             font-size: 14px;
-            margin: 4px 2px;
+            margin-top: 10px;
+            border-radius: 5px; /* Rounded corners */
             cursor: pointer;
+        }
+
+        .website-button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1>Christmas List Generator</h1>
-    <input type="text" id="itemUrl" placeholder="Enter item URL">
-    <button onclick="addItem()">Add Item</button>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <input type="text" id="itemUrl" placeholder="Enter item URL">
+        <button onclick="addItem()">Add Item</button>
+    </div>
     <ul id="list">
         <!-- List items will be added here -->
     </ul>
