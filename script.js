@@ -21,7 +21,7 @@ function addItem() {
             .then(data => {
                 console.log('Fetched data:', data); // Log the data to debug
 
-                if (data && data.image) {
+                if (data && data.image && data.title) {
                     itemList.push({
                         title: data.title,
                         description: data.description,
