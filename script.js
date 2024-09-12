@@ -74,7 +74,7 @@ function updateList() {
         listItem.innerHTML = `
             <div>
                 <h3>${item.title}</h3>
-                <img src="${item.image}" alt="${item.title}" style="width: 100px; height: auto;">
+                <img src="${item.image}" alt="${item.title}">
                 <p>${item.description}</p>
                 <a href="${item.url}" class="website-button" target="_blank">Visit Website</a>
             </div>
