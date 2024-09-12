@@ -1,7 +1,7 @@
 const apiKey = '50fcd22bd9234e05bfc6d6cbe0fc5e46'; // Replace with your LinkPreview API key
 const apiUrl = 'https://api.linkpreview.net/';
 
-let itemList = []; // Initialize itemList
+let itemList = [];
 
 // Database for hex colors of different websites
 const colorDatabase = {
@@ -86,14 +86,21 @@ function parseQueryString() {
     const params = new URLSearchParams(window.location.search);
     const shareUrls = params.get('share');
     if (shareUrls) {
-        const urls = shareUrls.split('&');
-        urls.forEach(url => addItem(decodeURIComponent(url)));
+        const urls = shareUrls.split('&').map(decodeURIComponent);
+        urls.forEach(url => addItem(url));
     }
 }
 
-function copyToClipboard(url) {
+function generateShareableUrl() {
+    const baseUrl = 'https://christmaslist.github.io/';
+    const shareParam = itemList.map(item => encodeURIComponent(item.url)).join('&');
+    return `${baseUrl}?share=${shareParam}`;
+}
+
+function copyToClipboard() {
+    const url = generateShareableUrl();
     navigator.clipboard.writeText(url)
-        .then(() => console.log('URL copied to clipboard'))
+        .then(() => console.log('Shareable URL copied to clipboard:', url))
         .catch(err => console.error('Error copying URL to clipboard:', err));
 }
 
