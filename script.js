@@ -3,9 +3,16 @@ const apiUrl = 'https://api.linkpreview.net/';
 
 let itemList = []; // Initialize itemList
 
+// Database for hex colors of different websites
+const colorDatabase = {
+    'lego.com': '#ffd502',
+    'amazon.com': '#ff9900',
+    'example.com': '#cccccc',
+    // Add more entries as needed
+};
+
 function addItem() {
     const url = document.getElementById('itemUrl').value;
-    const price = document.getElementById('itemPrice').value || 'Price not available'; // Get price from input
     if (url) {
         fetch(apiUrl, {
             method: 'POST',
@@ -22,16 +29,18 @@ function addItem() {
             .then(data => {
                 console.log('Fetched data:', data); // Log the data to debug
 
+                const domain = new URL(url).hostname;
+                const color = colorDatabase[domain] || '#ffffff'; // Default color if not in database
+
                 if (data) {
                     itemList.push({
                         title: data.title || 'No title',
                         description: data.description || 'No description',
                         image: data.image || 'https://via.placeholder.com/100', // Placeholder if no image
-                        price: price, // Use the manual or default price
-                        url: url
+                        url: url,
+                        color: color
                     });
                     document.getElementById('itemUrl').value = '';
-                    document.getElementById('itemPrice').value = ''; // Clear the price input
                     updateList();
                 } else {
                     console.error('No metadata found for this URL.');
@@ -47,12 +56,11 @@ function updateList() {
     itemList.forEach((item, index) => {
         const listItem = document.createElement('li');
         listItem.innerHTML = `
-            <div>
+            <div style="border: 2px solid ${item.color}; padding: 10px; margin: 10px 0;">
                 <h3>${item.title}</h3>
                 <img src="${item.image}" alt="${item.title}" style="width: 100px; height: auto;">
                 <p>${item.description}</p>
-                <p>Price: ${item.price}</p>
-                <a href="${item.url}" target="_blank">${item.url}</a>
+                <a href="${item.url}" class="website-button" target="_blank">Visit Website</a>
             </div>
         `;
         listElement.appendChild(listItem);
