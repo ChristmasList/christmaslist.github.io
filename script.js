@@ -21,11 +21,11 @@ function addItem() {
             .then(data => {
                 console.log('Fetched data:', data); // Log the data to debug
 
-                if (data && data.image && data.title) {
+                if (data) {
                     itemList.push({
-                        title: data.title,
-                        description: data.description,
-                        image: data.image,
+                        title: data.title || 'No title',
+                        description: data.description || 'No description',
+                        image: data.image || 'https://via.placeholder.com/100', // Placeholder if no image
                         price: 'Price not available', // Manual entry or additional parsing needed
                         url: url
                     });
@@ -46,10 +46,10 @@ function updateList() {
         const listItem = document.createElement('li');
         listItem.innerHTML = `
             <div>
-                <h3>${item.title || 'No title'}</h3>
+                <h3>${item.title}</h3>
                 <img src="${item.image}" alt="${item.title}" style="width: 100px; height: auto;">
-                <p>${item.description || 'No description'}</p>
-                <p>Price: ${item.price || 'Not available'}</p>
+                <p>${item.description}</p>
+                <p>Price: ${item.price}</p>
                 <a href="${item.url}" target="_blank">${item.url}</a>
             </div>
         `;
