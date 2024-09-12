@@ -19,6 +19,8 @@ function addItem() {
         })
             .then(response => response.json())
             .then(data => {
+                console.log('Fetched data:', data); // Log the data to debug
+
                 if (data && data.image) {
                     itemList.push({
                         title: data.title,
