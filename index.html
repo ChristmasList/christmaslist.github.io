@@ -4,138 +4,835 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Christmas List Generator</title>
-    <script src="script.js" defer></script>
+    
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'christmas': ['"Mountains of Christmas"', 'cursive'],
+                        'body': ['"Nunito"', 'sans-serif'],
+                    },
+                    colors: {
+                        holly: '#165B33',
+                        berry: '#BB2528',
+                        gold: '#F8B229',
+                        snow: '#F4F4F4',
+                        cane: '#F0F0F0'
+                    },
+                    backgroundImage: {
+                        'candy-stripe': 'repeating-linear-gradient(45deg, #BB2528, #BB2528 10px, #ffffff 10px, #ffffff 20px)',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
+            background-color: #0f3d23;
             color: #333;
+            overflow-x: hidden;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23134e2e' fill-opacity='0.4' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
         }
 
-        #itemUrl {
-            width: 300px;
-            padding: 10px;
-            margin-right: 10px;
+        /* Snowfall Animation */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial;
+            text-shadow: 0 0 1px #000;
+            user-select: none;
+            z-index: 0;
+            pointer-events: none;
+            animation-name: snowflakes-fall, snowflakes-shake;
+            animation-duration: 10s, 3s;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: infinite, infinite;
+            animation-play-state: running, running;
+            opacity: 0.8;
+        }
+        
+        @keyframes snowflakes-fall {
+            0% { top: -10%; }
+            100% { top: 100%; }
+        }
+        @keyframes snowflakes-shake {
+            0% { transform: translateX(0px); }
+            50% { transform: translateX(80px); }
+            100% { transform: translateX(0px); }
         }
 
-        button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
+        .snowflake:nth-of-type(0) { left: 1%; animation-delay: 0s, 0s; }
+        .snowflake:nth-of-type(1) { left: 10%; animation-delay: 1s, 1s; }
+        .snowflake:nth-of-type(2) { left: 20%; animation-delay: 6s, 0.5s; }
+        .snowflake:nth-of-type(3) { left: 30%; animation-delay: 4s, 2s; }
+        .snowflake:nth-of-type(4) { left: 40%; animation-delay: 2s, 2s; }
+        .snowflake:nth-of-type(5) { left: 50%; animation-delay: 8s, 3s; }
+        .snowflake:nth-of-type(6) { left: 60%; animation-delay: 6s, 2s; }
+        .snowflake:nth-of-type(7) { left: 70%; animation-delay: 2.5s, 1s; }
+        .snowflake:nth-of-type(8) { left: 80%; animation-delay: 1s, 0s; }
+        .snowflake:nth-of-type(9) { left: 90%; animation-delay: 3s, 1.5s; }
 
-        button:hover {
-            background-color: #218838;
+        /* Modern Showcase Card */
+        .gift-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
         }
-
-        .list-item {
-            background-color: #ffffff; /* White background */
-            border: 2px solid #000000; /* Default black border */
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        .gift-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.3);
+            z-index: 10;
         }
-
-        .list-item img {
-            max-width: 100px;
-            height: auto;
-            display: block;
-            margin-bottom: 10px;
+        
+        /* Toast Notification Animations */
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        .toast-exit { animation: fadeOut 0.3s ease-out forwards; }
+        
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #BB2528;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
         }
-
-        .website-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin-top: 10px;
-            border-radius: 5px; /* Rounded corners */
-            cursor: pointer;
-        }
-
-        .website-button:hover {
-            background-color: #0056b3;
-        }
-
-        .remove-button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin-top: 10px;
-            border-radius: 5px; /* Rounded corners */
-            cursor: pointer;
-        }
-
-        .remove-button:hover {
-            background-color: #c82333;
-        }
-
-        .import-button, .export-button {
-            background-color: #ffc107;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 14px;
-            margin: 10px 5px;
-            border-radius: 5px; /* Rounded corners */
-            cursor: pointer;
-        }
-
-        .import-button:hover, .export-button:hover {
-            background-color: #e0a800;
-        }
-
-        #importInput, #importTextArea {
-            display: none;
-        }
-
-        #importTextArea {
-            width: 100%;
-            height: 200px;
-            margin: 10px 0;
-            padding: 10px;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
-    <h1>Christmas List Generator</h1>
-    <div style="text-align: center; margin-bottom: 20px;">
-        <input type="text" id="itemUrl" placeholder="Enter item URL">
-        <button onclick="addItem(document.getElementById('itemUrl').value)">Add Item</button>
+<body class="font-body min-h-screen flex flex-col relative">
+
+    <!-- Snowflakes -->
+    <div class="snowflake" aria-hidden="true">❅</div>
+    <div class="snowflake" aria-hidden="true">❆</div>
+    <div class="snowflake" aria-hidden="true">❅</div>
+    <div class="snowflake" aria-hidden="true">❆</div>
+    <div class="snowflake" aria-hidden="true">❅</div>
+    <div class="snowflake" aria-hidden="true">❆</div>
+    <div class="snowflake" aria-hidden="true">❅</div>
+    <div class="snowflake" aria-hidden="true">❆</div>
+    <div class="snowflake" aria-hidden="true">❅</div>
+    <div class="snowflake" aria-hidden="true">❆</div>
+
+    <!-- Header -->
+    <header class="bg-holly text-white py-8 shadow-2xl border-b-8 border-gold relative z-10">
+        <div class="h-3 w-full bg-candy-stripe absolute top-0 left-0"></div>
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="font-christmas text-6xl drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-wide">
+                <i class="fa-solid fa-sleigh mr-3 text-gold"></i>
+                <span id="headerTitle">My Christmas List</span>
+                <i class="fa-solid fa-tree ml-3 text-gold"></i>
+            </h1>
+            <p id="headerSubtitle" class="mt-2 text-green-100 opacity-90 text-xl font-light">Ho Ho Ho! What would you like this year?</p>
+            
+            <!-- Badges -->
+            <div class="mt-6 flex justify-center gap-3">
+                <div id="sharedBadge" class="hidden inline-flex items-center gap-2 bg-blue-600/90 backdrop-blur text-white font-bold px-5 py-1.5 rounded-full shadow-lg border border-white/30">
+                    <i class="fa-solid fa-eye"></i> Visitor Mode
+                </div>
+                <div id="ownerBadge" class="hidden inline-flex items-center gap-2 bg-berry/90 backdrop-blur text-white font-bold px-5 py-1.5 rounded-full shadow-lg border border-white/30 animate-pulse">
+                    <i class="fa-solid fa-pen-nib"></i> Santa's Edit Mode
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-12 max-w-6xl relative z-10">
+        
+        <!-- Input Section (Hidden for Viewers) -->
+        <div id="inputSection" class="bg-white rounded-3xl shadow-2xl p-8 mb-12 border-4 border-berry relative overflow-hidden transform transition-transform hover:scale-[1.01]">
+            <div class="absolute top-0 right-0 -mt-4 -mr-4 text-gold opacity-10 text-9xl transform rotate-12 pointer-events-none">
+                <i class="fa-solid fa-gift"></i>
+            </div>
+            
+            <h2 class="font-christmas text-4xl text-berry mb-6"><i class="fa-solid fa-plus-circle mr-2"></i> Add a Gift</h2>
+            <div class="flex flex-col md:flex-row gap-4 items-center relative z-10">
+                <div class="relative w-full">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-link text-lg"></i>
+                    </div>
+                    <input type="text" id="itemUrl" 
+                        class="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:outline-none focus:border-holly focus:ring-4 focus:ring-holly/20 transition-all shadow-inner bg-gray-50 focus:bg-white" 
+                        placeholder="Paste a link (Amazon, Lego, etc)...">
+                </div>
+                <button onclick="addItemFromInput()" id="addBtn"
+                    class="w-full md:w-auto bg-berry hover:bg-red-700 text-white font-bold py-4 px-10 rounded-xl transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-3 text-lg border-b-4 border-red-900 active:border-b-0 active:translate-y-1">
+                    <span id="btnText">Add to List</span>
+                    <div id="btnLoader" class="loader hidden"></div>
+                </button>
+            </div>
+            <p class="text-sm text-gray-400 mt-3 ml-2 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-gold"></i> We'll automagically find the title, image, and price!
+            </p>
+        </div>
+
+        <!-- Sync Status -->
+        <div id="syncStatus" class="fixed top-4 right-4 z-50 bg-black/70 text-white px-4 py-2 rounded-full text-xs font-bold backdrop-blur-md opacity-0 transition-opacity flex items-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Saved
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-20 bg-white/5 rounded-3xl backdrop-blur-sm border-2 border-white/10 shadow-inner">
+            <div class="text-8xl text-white/40 mb-6 animate-bounce">
+                <i class="fa-solid fa-cookie-bite"></i>
+            </div>
+            <h3 class="text-3xl font-christmas text-white mb-2">Your list is empty!</h3>
+            <p class="text-white/80 text-lg">Even Santa needs a list. Start adding items above.</p>
+        </div>
+
+        <!-- List Grid -->
+        <ul id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+            <!-- Items injected here -->
+        </ul>
+
+        <!-- Owner Toolbar -->
+        <div id="ownerToolbar" class="mt-16 bg-white p-8 rounded-3xl shadow-2xl border-t-8 border-gold text-center relative overflow-hidden">
+             <div class="absolute inset-0 bg-snow opacity-50 pointer-events-none" style="background-image: radial-gradient(#ddd 1px, transparent 1px); background-size: 20px 20px;"></div>
+             <div class="relative z-10">
+                <h3 class="text-3xl font-christmas text-holly mb-6">
+                    <i class="fa-solid fa-share-nodes"></i> Share Your List
+                </h3>
+                
+                <div class="bg-blue-50/80 border-l-4 border-blue-500 p-5 mb-8 rounded-r text-blue-900 text-left max-w-2xl mx-auto shadow-sm">
+                    <i class="fa-solid fa-bolt mr-2 text-gold"></i> 
+                    <strong>Magic Sync:</strong> Send the "Live Link" to family. When you add items here, they appear on their screens instantly—no refreshing needed!
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="copyShareLink()" class="bg-gold hover:bg-yellow-500 text-holly font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:-translate-y-1 border-b-4 border-yellow-600 active:border-b-0 active:translate-y-0">
+                        <i class="fa-solid fa-link mr-2"></i> Copy Live Link
+                    </button>
+                    
+                    <button onclick="exportCSV()" class="bg-holly hover:bg-green-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:-translate-y-1 border-b-4 border-green-900 active:border-b-0 active:translate-y-0">
+                        <i class="fa-solid fa-file-csv mr-2"></i> Download CSV
+                    </button>
+                    
+                    <button onclick="openImportModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-full shadow-md transition-transform hover:-translate-y-1">
+                        Import
+                    </button>
+                    
+                    <button onclick="clearList()" class="text-red-400 hover:text-red-600 font-bold py-3 px-6 underline text-sm">
+                        Clear Everything
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Viewer Toolbar -->
+        <div id="viewerToolbar" class="hidden mt-16 bg-white p-8 rounded-3xl shadow-2xl border-t-8 border-gold text-center">
+            <h3 class="text-3xl font-christmas text-holly mb-3">Want to make your own list?</h3>
+            <p class="mb-6 text-gray-600 text-lg">This list is read-only because it was shared with you.</p>
+            <a href="?" class="inline-block bg-berry hover:bg-red-700 text-white font-bold py-4 px-10 rounded-full shadow-lg transition-transform hover:-translate-y-1 text-lg">
+                Start My Own List
+            </a>
+        </div>
+    </main>
+
+    <footer class="bg-holly text-center py-8 text-green-200 text-sm mt-12 border-t border-gold z-10">
+        <p class="font-christmas text-xl">&copy; 2024-<span id="currentYear"></span> Christmas List Generator <i class="fa-solid fa-snowflake ml-2 animate-spin-slow"></i></p>
+    </footer>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center z-50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative border-4 border-holly transform transition-all scale-100">
+            <div class="absolute -top-6 -left-6 text-6xl text-berry drop-shadow-lg"><i class="fa-solid fa-holly-berry"></i></div>
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-3xl font-christmas text-holly">Import List</h3>
+                <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div id="importHelpText" class="mb-6 text-sm text-gray-700 bg-snow p-4 rounded-xl border border-gray-200">
+                <p class="font-bold mb-2 text-holly"><i class="fa-solid fa-circle-info"></i> How to Import:</p>
+                <ul class="list-disc list-inside space-y-1.5 ml-2">
+                    <li>Upload a <strong>CSV</strong> or <strong>JSON</strong> file.</li>
+                    <li>Paste a list of URLs (one per line).</li>
+                    <li><span class="text-berry font-bold">ThingsToGetMe:</span> Download the CSV from their site, then upload it below.</li>
+                </ul>
+            </div>
+
+            <textarea id="importTextArea" class="w-full h-32 border-2 border-gray-300 rounded-xl p-4 text-sm font-mono focus:ring-2 focus:ring-holly focus:outline-none mb-6 resize-none" placeholder="Paste text or links here..."></textarea>
+            
+            <div class="flex justify-between items-center gap-4">
+                <label class="cursor-pointer bg-berry hover:bg-red-700 text-white py-3 px-6 rounded-xl transition-transform hover:scale-105 shadow-md font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-file-arrow-up"></i> Upload File
+                    <input type="file" id="importInput" class="hidden" accept=".json,.txt,.csv">
+                </label>
+                
+                <div class="flex gap-3">
+                    <button onclick="closeImportModal()" class="px-5 py-3 text-gray-500 hover:text-gray-700 font-bold">Cancel</button>
+                    <button onclick="importFromText()" class="bg-holly hover:bg-green-800 text-white px-6 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-transform hover:-translate-y-0.5">
+                        Process Text
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <ul id="list">
-        <!-- List items will be added here -->
-    </ul>
-    <div style="text-align: center; margin-top: 20px;">
-        <button class="export-button" onclick="exportList()">Copy List to Clipboard</button>
-        <button class="import-button" onclick="document.getElementById('importTextArea').style.display='block'">Paste JSON</button>
-        <textarea id="importTextArea" placeholder="Paste JSON here"></textarea>
-        <button class="import-button" onclick="importFromText()">Import List</button>
-        <button class="import-button" onclick="document.getElementById('importInput').click()">Import File</button>
-        <input type="file" id="importInput">
-    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+    <script>
+        // --- Firebase Config & Setup ---
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // --- Configuration ---
+        const API_KEY = '50fcd22bd9234e05bfc6d6cbe0fc5e46'; 
+        
+        // --- State ---
+        let itemList = [];
+        let currentUser = null;
+        let isViewer = false;
+        let shareId = null; 
+        
+        // --- Color Map ---
+        const colorMap = {
+            'lego.com': '#ffd502', 
+            'amazon.com': '#ff9900', 'amazon.co.uk': '#ff9900',
+            'steam': '#1b2838', 
+            'target.com': '#cc0000', 
+            'walmart.com': '#0071dc', 
+            'bestbuy.com': '#fff200',
+            'thingstogetme.com': '#2c3e50'
+        };
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const year = new Date().getFullYear();
+            document.getElementById('currentYear').innerText = `${year}-${year+1}`;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedListId = urlParams.get('share');
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                 await auth.signInWithCustomToken(__initial_auth_token);
+            } else {
+                 await auth.signInAnonymously();
+            }
+
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    if (sharedListId) {
+                        if (sharedListId === user.uid) {
+                            setupOwner(user.uid);
+                        } else {
+                            setupViewer(sharedListId);
+                        }
+                    } else {
+                        setupOwner(user.uid);
+                    }
+                }
+            });
+
+            document.getElementById('importInput').addEventListener('change', (e) => {
+                if(e.target.files[0]) importFromFile(e.target.files[0]);
+            });
+            document.getElementById('itemUrl').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addItemFromInput();
+            });
+        });
+
+        // --- Sharing & Sync Logic ---
+
+        function setupViewer(docId) {
+            isViewer = true;
+            shareId = docId;
+
+            document.getElementById('headerTitle').innerText = "Shared Christmas List";
+            document.getElementById('headerSubtitle').innerText = "Here is what they are wishing for!";
+            document.getElementById('inputSection').classList.add('hidden');
+            document.getElementById('ownerToolbar').classList.add('hidden');
+            document.getElementById('viewerToolbar').classList.remove('hidden');
+            document.getElementById('sharedBadge').classList.remove('hidden');
+            document.getElementById('ownerBadge').classList.add('hidden');
+
+            db.collection('artifacts').doc(appId).collection('public').doc('data').collection('lists').doc(docId)
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        itemList = data.items || [];
+                        updateListUI();
+                    } else {
+                        showToast('This shared list does not exist.', 'error');
+                        document.getElementById('list').innerHTML = '<p class="text-white text-center col-span-3">List not found.</p>';
+                    }
+                }, (error) => {
+                    console.error("Error listening to list:", error);
+                    showToast('Error connecting to list.', 'error');
+                });
+        }
+
+        function setupOwner(uid) {
+            isViewer = false;
+            shareId = uid;
+
+            document.getElementById('ownerBadge').classList.remove('hidden');
+            document.getElementById('sharedBadge').classList.add('hidden');
+
+            const listRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('lists').doc(shareId);
+
+            listRef.get().then((doc) => {
+                if (doc.exists) {
+                    itemList = doc.data().items || [];
+                    updateListUI();
+                } else {
+                    const localData = localStorage.getItem('christmasList');
+                    if (localData) {
+                        try {
+                            itemList = JSON.parse(localData);
+                            saveToCloud();
+                        } catch(e) { itemList = []; }
+                    }
+                    updateListUI();
+                }
+            });
+        }
+
+        function saveToCloud() {
+            if (isViewer || !shareId || !currentUser) return;
+
+            const listRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('lists').doc(shareId);
+            
+            const sanitizedItems = itemList.map(item => ({
+                title: item.title || 'Untitled',
+                url: item.url || '#',
+                price: item.price || '',
+                description: item.description || '',
+                image: item.image || null,
+                color: item.color || '#165B33'
+            }));
+
+            listRef.set({
+                items: sanitizedItems,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                ownerId: currentUser.uid
+            }, { merge: true })
+            .then(() => {
+                const status = document.getElementById('syncStatus');
+                status.style.opacity = '1';
+                setTimeout(() => status.style.opacity = '0', 2000);
+            })
+            .catch(err => console.error("Save failed", err));
+
+            localStorage.setItem('christmasList', JSON.stringify(itemList));
+        }
+
+        function copyShareLink() {
+            if (!shareId) return;
+            const baseUrl = window.location.href.split('?')[0];
+            const shareUrl = `${baseUrl}?share=${shareId}`;
+            copyToClipboard(shareUrl, 'Live Link copied! Anyone with this link can see updates.');
+        }
+
+        // --- Item Management ---
+
+        function getColorForUrl(url) {
+            try {
+                const hostname = new URL(url).hostname;
+                for (const key in colorMap) {
+                    if (hostname.includes(key)) return colorMap[key];
+                }
+                return '#165B33'; 
+            } catch (e) { return '#165B33'; }
+        }
+
+        function getDomainName(url) {
+            try { return new URL(url).hostname.replace('www.', ''); } 
+            catch (e) { return 'link'; }
+        }
+
+        function extractPrice(text) {
+            if (!text) return '';
+            const regexes = [
+                /([$£€¥]\s?\d+(?:[.,]\d{2})?)/, 
+                /(\d+(?:[.,]\d{2})?\s?(?:USD|GBP|EUR|CAD|AUD))/,
+                /Price:\s?([$£€¥]?\d+(?:[.,]\d{2})?)/i
+            ];
+            for (const r of regexes) {
+                const match = text.match(r);
+                if (match) return match[1];
+            }
+            return '';
+        }
+
+        async function addItemFromInput() {
+            const input = document.getElementById('itemUrl');
+            const url = input.value.trim();
+            if (!url) return showToast('Please enter a URL first', 'error');
+            if (!url.startsWith('http')) return showToast('URL must start with http:// or https://', 'warning');
+            
+            await fetchAndAddItem(url);
+            input.value = '';
+        }
+
+        async function fetchAndAddItem(url) {
+            if (isViewer) return;
+
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const input = document.getElementById('itemUrl');
+            const isManual = input && input.value && input.value.includes(url);
+
+            if(isManual) {
+                input.disabled = true;
+                btnText.classList.add('hidden');
+                btnLoader.classList.remove('hidden');
+            }
+
+            try {
+                const response = await fetch(`https://api.linkpreview.net/?q=${encodeURIComponent(url)}`, {
+                    headers: { 'X-Linkpreview-Api-Key': API_KEY }
+                });
+
+                if (!response.ok) throw new Error('API request failed');
+                const data = await response.json();
+                const combinedText = (data.title || '') + ' ' + (data.description || '');
+                const guessedPrice = extractPrice(combinedText);
+
+                const newItem = {
+                    title: data.title || url,
+                    description: data.description || `Gift from ${getDomainName(url)}`,
+                    image: data.image || null,
+                    url: url,
+                    price: guessedPrice,
+                    color: getColorForUrl(url)
+                };
+                
+                if(!itemList.some(i => i.url === url)) {
+                    itemList.push(newItem);
+                    saveToCloud(); 
+                    updateListUI();
+                    if(isManual) {
+                        if (guessedPrice) showToast(`Added with price: ${guessedPrice}!`, 'success');
+                        else showToast('Item added! (Could not find price)', 'success');
+                    }
+                } else {
+                    if(isManual) showToast('Item already in list', 'warning');
+                }
+
+            } catch (error) {
+                console.warn('Metadata fetch failed', error);
+                if(!itemList.some(i => i.url === url)) {
+                    itemList.push({
+                        title: getDomainName(url),
+                        description: 'No description available',
+                        image: null,
+                        url: url,
+                        price: '',
+                        color: getColorForUrl(url)
+                    });
+                    saveToCloud();
+                    updateListUI();
+                    if(isManual) showToast('Added link (Metadata unavailable)', 'info');
+                }
+            } finally {
+                if(isManual) {
+                    input.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnLoader.classList.add('hidden');
+                    input.focus();
+                }
+            }
+        }
+
+        // --- NEW: Background Enricher for CSV imports ---
+        async function enrichItem(index, url) {
+            try {
+                // Rate limit slightly to be nice to API
+                await new Promise(r => setTimeout(r, index * 800)); 
+                
+                const response = await fetch(`https://api.linkpreview.net/?q=${encodeURIComponent(url)}`, {
+                    headers: { 'X-Linkpreview-Api-Key': API_KEY }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.image && data.image.length > 5) {
+                        // Found an image! Update list
+                        itemList[index].image = data.image;
+                        // Also update price if we didn't have one
+                        if (!itemList[index].price) {
+                             const combinedText = (data.title || '') + ' ' + (data.description || '');
+                             itemList[index].price = extractPrice(combinedText);
+                        }
+                        saveToCloud();
+                        updateListUI();
+                    }
+                }
+            } catch (e) { console.log('Enrich failed for', url); }
+        }
+
+        function removeItem(index) {
+            if (isViewer) return;
+            itemList.splice(index, 1);
+            saveToCloud();
+            updateListUI();
+            showToast('Item removed', 'info');
+        }
+
+        function updatePrice(index, newPrice) {
+            if (isViewer) return;
+            itemList[index].price = newPrice;
+            saveToCloud();
+        }
+
+        function clearList() {
+            if (isViewer) return;
+            if(confirm("Are you sure you want to delete everything?")) {
+                itemList = [];
+                saveToCloud();
+                updateListUI();
+                showToast('List cleared', 'info');
+            }
+        }
+
+        function updateListUI() {
+            const listElement = document.getElementById('list');
+            const emptyState = document.getElementById('emptyState');
+            
+            listElement.innerHTML = '';
+
+            if (itemList.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                
+                itemList.forEach((item, index) => {
+                    const hasImage = item.image && item.image.length > 5;
+                    const imgSrc = hasImage ? item.image : 'https://placehold.co/600x400/f3f4f6/1e293b?text=Fetching...'; 
+                    
+                    const priceDisplay = isViewer 
+                        ? `<span class="text-sm font-bold text-gray-700 bg-gray-100 px-3 py-1 rounded-full shadow-sm border border-gray-200">${item.price || '--'}</span>`
+                        : `<input type="text" value="${item.price || ''}" onchange="updatePrice(${index}, this.value)" placeholder="Price?" class="text-sm font-bold text-gray-700 w-24 border-b-2 border-dashed border-gray-300 focus:border-berry focus:outline-none bg-transparent transition-colors text-right">`;
+
+                    const removeBtn = isViewer
+                        ? '' 
+                        : `<button onclick="removeItem(${index})" class="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-berry rounded-full transition-all" title="Remove Item"><i class="fa-solid fa-trash-can"></i></button>`;
+
+                    const listItem = document.createElement('li');
+                    listItem.className = 'gift-card bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col border border-gray-100 relative';
+                    
+                    const ribbonColor = item.color || '#165B33';
+
+                    listItem.innerHTML = `
+                        <div class="h-56 bg-white relative p-6 flex items-center justify-center overflow-hidden bg-gradient-to-b from-white to-gray-50">
+                            <div class="absolute top-0 left-0 w-full h-2" style="background-color: ${ribbonColor}"></div>
+                            <img src="${imgSrc}" alt="${item.title}" class="max-w-full max-h-full object-contain drop-shadow-lg transition-transform duration-500 hover:scale-105" onerror="this.src='https://placehold.co/600x400/f3f4f6/1e293b?text=No+Image'">
+                        </div>
+
+                        <div class="p-6 flex-grow flex flex-col bg-white relative z-10">
+                            <div class="flex justify-between items-start gap-4 mb-3">
+                                <h3 class="font-bold text-lg text-gray-800 line-clamp-2 leading-tight font-body tracking-tight" title="${item.title}">${item.title}</h3>
+                                <div class="flex-shrink-0">
+                                    ${priceDisplay}
+                                </div>
+                            </div>
+
+                            <p class="text-xs text-gray-500 mb-6 line-clamp-3 flex-grow leading-relaxed italic border-l-2 border-gray-100 pl-3">${item.description}</p>
+                            
+                            <div class="mt-auto pt-4 flex items-center gap-3">
+                                <a href="${item.url}" target="_blank" 
+                                   class="flex-grow bg-gray-50 hover:bg-holly hover:text-white text-gray-700 text-center py-3 rounded-xl text-sm font-bold transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 group border border-gray-200 hover:border-transparent">
+                                   <span>Visit Website</span> <i class="fa-solid fa-arrow-up-right-from-square text-xs group-hover:translate-x-1 transition-transform"></i>
+                                </a>
+                                ${removeBtn}
+                            </div>
+                        </div>
+                    `;
+                    listElement.appendChild(listItem);
+                });
+            }
+        }
+
+        // --- Export/Import Utils ---
+        function exportCSV() {
+            if (itemList.length === 0) return showToast('List is empty!', 'warning');
+            let csvContent = "data:text/csv;charset=utf-8,Title,URL,Price,Description,ImageURL\n";
+            itemList.forEach(item => {
+                const esc = t => `"${(t || '').replace(/"/g, '""')}"`;
+                csvContent += `${esc(item.title)},${esc(item.url)},${esc(item.price)},${esc(item.description)},${esc(item.image)}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "christmas_list.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function copyToClipboard(text, successMsg) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast(successMsg, 'success')).catch(err => manualCopy(text));
+            } else { manualCopy(text); }
+        }
+        function manualCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Copied to clipboard!', 'success');
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+            document.getElementById('importTextArea').focus();
+        }
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+        function importFromText() { processImport(document.getElementById('importTextArea').value); }
+        function importFromFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => processImport(e.target.result);
+            reader.readAsText(file);
+        }
+
+        async function processImport(content) {
+            if(!content || !content.trim()) return showToast('Content is empty', 'warning');
+            const trimmed = content.trim();
+
+            if (trimmed.includes('thingstogetme.com') && !trimmed.includes(',') && !trimmed.includes('\n')) {
+                showToast('For ThingsToGetMe, please download the CSV from their site and upload it here.', 'warning');
+                return; 
+            }
+
+            try {
+                // 1. JSON
+                if (trimmed.startsWith('[')) {
+                    const parsed = JSON.parse(trimmed);
+                    if (Array.isArray(parsed)) {
+                        itemList = parsed;
+                        saveToCloud(); updateListUI(); closeImportModal();
+                        return showToast('JSON imported successfully!', 'success');
+                    }
+                }
+
+                // 2. CSV Handling
+                if (trimmed.includes(',') && (trimmed.includes('\n') || trimmed.length > 20)) {
+                    const lines = trimmed.split(/\r?\n/).filter(line => line.trim() !== '');
+                    
+                    if (lines.length > 0) {
+                        const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim().toLowerCase());
+                        
+                        // Map Columns based on your CSV
+                        const urlIdx = headers.findIndex(h => h.includes('url') || h.includes('link'));
+                        const titleIdx = headers.findIndex(h => h.includes('name') || h.includes('title') || h.includes('item'));
+                        const priceIdx = headers.findIndex(h => h.includes('price') || h.includes('cost'));
+                        const imgIdx = headers.findIndex(h => h.includes('image') || h.includes('img')); // -1 for your CSV
+                        const descIdx = headers.findIndex(h => h.includes('note') || h.includes('desc'));
+
+                        if (urlIdx !== -1) {
+                            let addedCount = 0;
+                            const newItemsIndices = [];
+
+                            for (let i = 1; i < lines.length; i++) {
+                                const row = lines[i];
+                                // Handle commas inside quotes logic
+                                const parts = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                                const cleanParts = parts.map(p => p.replace(/^"|"$/g, '').trim());
+
+                                const url = cleanParts[urlIdx];
+                                if (url && url.startsWith('http') && !itemList.some(item => item.url === url)) {
+                                    
+                                    const rawPrice = priceIdx !== -1 ? cleanParts[priceIdx] : '';
+                                    
+                                    // Use explicit image column if exists, otherwise null
+                                    const imgUrl = (imgIdx !== -1 ? cleanParts[imgIdx] : null);
+
+                                    itemList.push({
+                                        title: (titleIdx !== -1 ? cleanParts[titleIdx] : '') || 'Imported Item',
+                                        url: url,
+                                        price: rawPrice, 
+                                        description: (descIdx !== -1 ? cleanParts[descIdx] : 'Imported from CSV'),
+                                        image: imgUrl,
+                                        color: getColorForUrl(url)
+                                    });
+                                    newItemsIndices.push(itemList.length - 1);
+                                    addedCount++;
+                                }
+                            }
+                            
+                            if (addedCount > 0) {
+                                saveToCloud();
+                                updateListUI();
+                                closeImportModal();
+                                showToast(`Imported ${addedCount} items. Fetching images...`, 'success');
+                                
+                                // TRIGGER BACKGROUND ENRICHMENT
+                                // We iterate through the newly added items and fetch images
+                                newItemsIndices.forEach(idx => {
+                                    if (!itemList[idx].image) {
+                                        enrichItem(idx, itemList[idx].url);
+                                    }
+                                });
+                                return;
+                            }
+                        }
+                    }
+                }
+                
+                // 3. Fallback: URL List
+                const urlRegex = /(https?:\/\/[^\s"']+)/g;
+                const matches = trimmed.match(urlRegex);
+                if (matches && matches.length > 0) {
+                    const cleanLinks = [...new Set(matches)].filter(u => !u.includes('google.com'));
+                    if(cleanLinks.length > 0) {
+                        closeImportModal();
+                        showToast(`Found ${cleanLinks.length} items. Importing...`, 'info');
+                        for (const url of cleanLinks) {
+                            if(!itemList.some(i => i.url === url)) await fetchAndAddItem(url);
+                        }
+                        return;
+                    }
+                }
+                throw new Error("No valid data found");
+            } catch (e) { 
+                console.error(e);
+                showToast('Import failed. Try pasting links directly.', 'error'); 
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            let bgClass = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-yellow-600');
+            toast.className = `${bgClass} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[200px] toast-enter border border-white/20`;
+            toast.innerHTML = `<i class="fa-solid fa-bell"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-exit');
+                setTimeout(() => { if(container.contains(toast)) container.removeChild(toast); }, 300);
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
